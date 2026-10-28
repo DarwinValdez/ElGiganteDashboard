@@ -20,7 +20,11 @@ export async function signIn(_prev: { error?: string } | undefined, formData: Fo
     email: parsed.data.email,
     password: parsed.data.password,
   });
-  if (error) return { error: "Correo o contraseña incorrectos" };
+  if (error) {
+    if (error.status === 400 || error.code === "invalid_credentials") return { error: "Correo o contraseña incorrectos" };
+    console.error("[login]", error.status, error.message);
+    return { error: "No se pudo conectar con el servicio de autenticación. Intente de nuevo." };
+  }
 
   const { data: profile } = await supabase.from("profiles").select("active").eq("id", data.user.id).maybeSingle();
   if (!profile?.active) {
