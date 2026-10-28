@@ -15,18 +15,28 @@ export async function signIn(_prev: { error?: string } | undefined, formData: Fo
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  });
+  let supabase;
+  let result;
+  try {
+    supabase = await createClient();
+    result = await supabase.auth.signInWithPassword({ email: parsed.data.email, password: parsed.data.password });
+  } catch (e) {
+    console.error("[login]", e);
+    return { error: "No se pudo conectar con Supabase. Revise la configuración en /setup." };
+  }
+  const { data, error } = result;
   if (error) {
     if (error.status === 400 || error.code === "invalid_credentials") return { error: "Correo o contraseña incorrectos" };
     console.error("[login]", error.status, error.message);
     return { error: "No se pudo conectar con el servicio de autenticación. Intente de nuevo." };
   }
 
-  const { data: profile } = await supabase.from("profiles").select("active").eq("id", data.user.id).maybeSingle();
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("active").eq("id", data.user.id).maybeSingle();
+  if (profileError) {
+    await supabase.auth.signOut();
+    console.error("[login] profiles", profileError);
+    return { error: "La base de datos no está lista (¿faltan las migraciones?). Revise /setup." };
+  }
   if (!profile?.active) {
     await supabase.auth.signOut();
     return { error: "Su usuario está inactivo o no tiene perfil asignado. Contacte al administrador." };

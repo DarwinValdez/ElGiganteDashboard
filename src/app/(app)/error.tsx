@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,12 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
       <h2 className="text-lg font-semibold">No se pudo cargar esta pantalla</h2>
       <p className="mt-2 text-sm text-muted-foreground">{error.message || "Error inesperado."}</p>
       {error.digest ? <p className="mt-1 text-xs text-muted-foreground">Ref: {error.digest}</p> : null}
-      <Button className="mt-4" onClick={reset}>
-        Reintentar
-      </Button>
+      <div className="mt-4 flex justify-center gap-2">
+        <Button onClick={reset}>Reintentar</Button>
+        <Button variant="outline" asChild>
+          <Link href="/setup">Diagnóstico de configuración</Link>
+        </Button>
+      </div>
     </div>
   );
 }

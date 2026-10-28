@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/login/login-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 
 export const metadata: Metadata = { title: "Iniciar sesión" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) redirect("/setup");
   const error = params.error === "inactive" ? "Su usuario está inactivo o no tiene perfil asignado." : undefined;
   return (
     <div className="flex min-h-dvh items-center justify-center bg-sidebar p-4">
