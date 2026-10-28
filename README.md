@@ -63,10 +63,10 @@ docs/demo/                       Factura de ejemplo para probar el OCR
    ```
    Las migraciones crean tablas, índices, funciones, políticas RLS y el **bucket privado `invoices`** con sus políticas.
 3. **Autenticación** (Authentication → Sign In / Providers):
-   - Deje habilitado *Email* (correo + contraseña).
-   - **Desactive "Allow new users to sign up"**. Las cuentas las crea el administrador desde `/users` (o desde el panel de Supabase). Esto evita registros no autorizados.
-   - En *URL Configuration* ponga la URL de producción de Vercel como *Site URL*.
-4. **Primer administrador:** cree el primer usuario en *Authentication → Users → Add user* (marque "Auto confirm"). **El primer perfil creado recibe el rol `admin` automáticamente**; los siguientes son `employee` salvo que el administrador indique otro rol. Hágalo inmediatamente después de las migraciones.
+   - Deje habilitado *Email* (correo + contraseña) y "Allow new users to sign up".
+   - En *URL Configuration* ponga la URL de Vercel como *Site URL* y agregue `https://<su-dominio>/auth/confirm` en *Redirect URLs*.
+   - Seguridad: quien se registra en `/register` queda como **empleado inactivo** hasta que un administrador lo apruebe en `/users`. Si prefiere que sólo el administrador cree cuentas, desactive "Allow new users to sign up".
+4. **Crear la primera cuenta:** abra `https://<su-dominio>/register`. **La primera cuenta del sistema es administrador y queda activa.** (Si "Confirm email" está activo, confirme el correo con el enlace recibido.) Hágalo inmediatamente después de las migraciones.
 5. **Claves:** en *Project Settings → API Keys* copie la URL, la clave publicable (o `anon`) y la `service_role` (secreta).
 6. (Opcional) **Datos de demostración:** ejecute `supabase/seed/demo_data.sql`. Todo lleva el prefijo `[DEMO]`/`DEMO-`. Elimínelos con `supabase/seed/remove_demo_data.sql` antes de operar con datos reales.
 

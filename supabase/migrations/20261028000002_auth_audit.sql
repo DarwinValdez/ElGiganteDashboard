@@ -34,9 +34,11 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
--- Alta automática de perfil. El primer usuario es administrador.
--- El rol de los siguientes lo asigna un administrador (app_metadata.role),
--- nunca el propio usuario (user_metadata no se usa para el rol).
+-- Alta automática de perfil.
+--  * El primer usuario es administrador activo.
+--  * Los creados por un administrador (app_metadata.role) quedan activos con ese rol.
+--  * Los que se registran solos quedan como empleados INACTIVOS hasta que un
+--    administrador los apruebe. El rol nunca se toma de user_metadata.
 -- ---------------------------------------------------------------------
 create or replace function public.handle_new_user()
 returns trigger
@@ -44,16 +46,21 @@ language plpgsql security definer
 set search_path = public as $$
 declare
   v_role public.app_role := 'employee';
+  v_active boolean := false;
   v_meta text := new.raw_app_meta_data ->> 'role';
 begin
+  -- Serializa altas simultáneas para que sólo exista un "primer usuario".
+  perform pg_advisory_xact_lock(hashtext('public.handle_new_user'));
   if not exists (select 1 from public.profiles) then
     v_role := 'admin';
+    v_active := true;
   elsif v_meta in ('admin', 'purchasing', 'employee') then
     v_role := v_meta::public.app_role;
+    v_active := true;
   end if;
 
-  insert into public.profiles (id, email, full_name, role)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'full_name', split_part(new.email, '@', 1)), v_role)
+  insert into public.profiles (id, email, full_name, role, active)
+  values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'full_name', split_part(new.email, '@', 1)), v_role, v_active)
   on conflict (id) do nothing;
   return new;
 end $$;
@@ -201,3 +208,11 @@ begin
 end $$;
 create trigger invoice_items_protect before insert or update or delete on public.invoice_items
   for each row execute function public.protect_invoice_items();
+
+-- Para la pantalla de registro: indica si ya existe algún usuario (sin exponer datos).
+create or replace function public.has_any_user()
+returns boolean
+language sql stable security definer
+set search_path = public as $$
+  select exists (select 1 from public.profiles)
+$$;

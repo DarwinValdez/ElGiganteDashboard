@@ -26,6 +26,7 @@ export async function signIn(_prev: { error?: string } | undefined, formData: Fo
   }
   const { data, error } = result;
   if (error) {
+    if (error.code === "email_not_confirmed") return { error: "Confirme su correo con el enlace que le enviamos antes de iniciar sesión." };
     if (error.status === 400 || error.code === "invalid_credentials") return { error: "Correo o contraseña incorrectos" };
     console.error("[login]", error.status, error.message);
     return { error: "No se pudo conectar con el servicio de autenticación. Intente de nuevo." };
@@ -39,7 +40,7 @@ export async function signIn(_prev: { error?: string } | undefined, formData: Fo
   }
   if (!profile?.active) {
     await supabase.auth.signOut();
-    return { error: "Su usuario está inactivo o no tiene perfil asignado. Contacte al administrador." };
+    return { error: "Su cuenta está pendiente de aprobación o fue desactivada. Un administrador debe activarla." };
   }
 
   const next = parsed.data.next && parsed.data.next.startsWith("/") && !parsed.data.next.startsWith("//") ? parsed.data.next : "/";

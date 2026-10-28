@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/login/login-form";
@@ -10,7 +11,12 @@ export const metadata: Metadata = { title: "Iniciar sesión" };
 export default async function LoginPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) redirect("/setup");
-  const error = params.error === "inactive" ? "Su usuario está inactivo o no tiene perfil asignado." : undefined;
+  const error =
+    params.error === "inactive"
+      ? "Su cuenta está pendiente de aprobación o fue desactivada. Contacte a un administrador."
+      : params.error === "confirm"
+        ? "El enlace de confirmación no es válido o ya expiró."
+        : undefined;
   return (
     <div className="flex min-h-dvh items-center justify-center bg-sidebar p-4">
       <div className="w-full max-w-sm">
@@ -28,7 +34,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <LoginForm next={params.next} initialError={error} />
           </CardContent>
         </Card>
-        <p className="mt-4 text-center text-xs text-white/60">Las cuentas las crea un administrador.</p>
+        <p className="mt-4 text-center text-sm text-white/80">
+          ¿No tiene cuenta?{" "}
+          <Link href="/register" className="font-semibold text-white underline">
+            Crear cuenta
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -13,7 +13,8 @@ export const metadata = { title: "Usuarios" };
 export default async function UsersPage() {
   const { supabase, profile } = await requirePage("users.manage");
   const { data } = await supabase.from("profiles").select("*").order("created_at");
-  const users = (data ?? []) as Profile[];
+  const users = ((data ?? []) as Profile[]).sort((a, b) => Number(a.active) - Number(b.active));
+  const pending = users.filter((u) => !u.active).length;
   const hasServiceKey = !!(process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY);
   return (
     <>
@@ -22,6 +23,13 @@ export default async function UsersPage() {
         <Alert variant="warning" className="mb-4">
           <AlertDescription>
             Para crear usuarios y cambiar contraseñas desde aquí configure SUPABASE_SERVICE_ROLE_KEY en el servidor. Mientras tanto puede invitarlos desde el panel de Supabase (Authentication → Users) y asignar el rol aquí.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {pending ? (
+        <Alert className="mb-4">
+          <AlertDescription>
+            {pending} cuenta(s) inactiva(s) o pendiente(s) de aprobación. Revise el rol y pulse «Activar» para dar acceso.
           </AlertDescription>
         </Alert>
       ) : null}

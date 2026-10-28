@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 
-const PUBLIC_PATHS = ["/login", "/setup", "/api/health"];
+const PUBLIC_PATHS = ["/login", "/register", "/auth/", "/setup", "/api/health"];
 
 /** Refresca la sesión en cada petición y redirige a /login si no hay usuario. */
 export async function updateSession(request: NextRequest) {

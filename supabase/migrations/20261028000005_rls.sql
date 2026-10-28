@@ -159,3 +159,6 @@ create policy audit_select on public.audit_logs for select to authenticated usin
 -- Vistas
 grant select on public.invoice_balances, public.supplier_balances, public.product_cost_changes to authenticated;
 revoke all on public.invoice_balances, public.supplier_balances, public.product_cost_changes from anon;
+
+-- Pantalla pública de registro: sólo necesita saber si ya hay usuarios.
+grant execute on function public.has_any_user() to anon, authenticated;

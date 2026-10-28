@@ -16,7 +16,22 @@ do $$ begin
   assert (select role from public.profiles where email = 'admin@gigante.test') = 'admin', 'primer usuario debe ser admin';
   assert (select role from public.profiles where email = 'compras@gigante.test') = 'purchasing';
   assert (select role from public.profiles where email = 'empleado@gigante.test') = 'employee';
+  assert (select active from public.profiles where email = 'admin@gigante.test'), 'primer usuario activo';
+  assert (select active from public.profiles where email = 'compras@gigante.test'), 'creado por admin: activo';
+  assert not (select active from public.profiles where email = 'empleado@gigante.test'), 'autorregistro: pendiente de aprobación';
+  assert public.has_any_user();
 end $$;
+
+-- Un usuario pendiente no ve nada hasta ser aprobado
+set role authenticated;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000c', false);
+do $$ begin
+  assert (select count(*) from public.units) = 0, 'pendiente no ve catálogo';
+end $$;
+-- El administrador lo aprueba
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false);
+update public.profiles set active = true where email = 'empleado@gigante.test';
+reset role;
 
 create or replace function pg_temp.expect_error(p_sql text, p_like text) returns void language plpgsql as $$
 begin
