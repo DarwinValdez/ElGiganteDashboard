@@ -25,7 +25,7 @@ export async function runAction<T>(fn: () => Promise<T>, message?: string): Prom
 }
 
 /** Lanza el error de Supabase si existe; devuelve los datos en caso contrario. */
-export function unwrap<T>(res: { data: T; error: unknown }): T {
+export function unwrap<T>(res: { data: T; error: unknown }): NonNullable<T> {
   if (res.error) throw res.error;
-  return res.data;
+  return res.data as NonNullable<T>;
 }

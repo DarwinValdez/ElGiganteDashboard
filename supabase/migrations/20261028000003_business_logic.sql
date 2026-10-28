@@ -198,7 +198,7 @@ begin
   perform public.require_role('admin', 'purchasing');
   select status into v_status from public.invoices where id = p_invoice_id for update;
   if not found then raise exception 'Factura no encontrada'; end if;
-  if v_status not in ('uploaded', 'ocr_failed', 'needs_review') then
+  if v_status not in ('uploaded', 'processing', 'ocr_failed', 'needs_review') then
     raise exception 'La factura está % y no puede editarse', v_status;
   end if;
   if jsonb_typeof(p_items) <> 'array' then raise exception 'Líneas inválidas'; end if;

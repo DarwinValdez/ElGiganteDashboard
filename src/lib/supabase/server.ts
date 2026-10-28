@@ -9,8 +9,8 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL, assertSupabaseEnv } from "@/lib/env";
  * Usa la sesión del usuario: todas las consultas pasan por RLS.
  */
 export async function createClient() {
+  const cookieStore = await cookies(); // primero: marca la ruta como dinámica
   assertSupabaseEnv();
-  const cookieStore = await cookies();
   return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
