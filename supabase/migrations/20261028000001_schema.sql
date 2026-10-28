@@ -198,6 +198,7 @@ create table public.products (
   sale_price            numeric(14,4) check (sale_price is null or sale_price >= 0), -- independiente del costo
   min_stock             numeric(14,4) not null default 0 check (min_stock >= 0),
   current_stock         numeric(14,4) not null default 0,
+  below_min             boolean generated always as (min_stock > 0 and current_stock <= min_stock) stored,
   active                boolean not null default true,
   notes                 text,
   normalized_name       text generated always as (public.normalize_text(name)) stored,
@@ -211,6 +212,7 @@ create index products_category_idx on public.products (category_id);
 create index products_supplier_idx on public.products (default_supplier_id);
 create index products_name_trgm on public.products using gin (normalized_name extensions.gin_trgm_ops);
 create index products_active_idx on public.products (active);
+create index products_below_min_idx on public.products (below_min) where below_min;
 
 -- Código y descripción que un proveedor usa para un producto del catálogo.
 create table public.product_supplier_codes (

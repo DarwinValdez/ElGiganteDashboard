@@ -33,8 +33,8 @@ export function ProductPicker({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setLoading(true);
     const t = setTimeout(async () => {
+      setLoading(true);
       try {
         const r = await searchProducts(q);
         if (!cancelled) setResults(r);
@@ -60,12 +60,12 @@ export function ProductPicker({
     <div ref={ref} className={cn("relative min-w-0", className)}>
       <button
         type="button"
-        aria-invalid={invalid}
+        data-invalid={invalid ? "" : undefined}
         onClick={() => {
           setOpen((o) => !o);
           if (!q && initialQuery) setQ(initialQuery);
         }}
-        className="border-input flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-card px-3 text-left text-sm shadow-xs aria-invalid:border-destructive"
+        className="border-input flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-card px-3 text-left text-sm shadow-xs data-[invalid]:border-destructive"
       >
         <span className={cn("truncate", !value && "text-muted-foreground")}>
           {value ? `${value.name}${value.sku ? ` · ${value.sku}` : ""}` : placeholder}
