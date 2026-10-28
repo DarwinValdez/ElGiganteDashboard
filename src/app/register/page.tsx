@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { RegisterForm } from "@/app/register/register-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Crear cuenta" };
 
 export default async function RegisterPage() {
+  await connection();
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) redirect("/setup");
   const supabase = await createClient();
   const { data: hasUsers, error } = await supabase.rpc("has_any_user");
